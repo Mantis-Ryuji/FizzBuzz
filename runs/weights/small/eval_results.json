@@ -1,0 +1,236 @@
+{
+  "name": "small",
+  "seed": 42,
+  "config_path": "configs\\small.yaml",
+  "weight_path": "runs\\weights\\small\\model.pt",
+  "num_parameters": 5108,
+  "results": {
+    "test_6digit": {
+      "name": "test_6digit",
+      "start": 100000,
+      "end": 999999,
+      "batch_size": 32768,
+      "num_samples": 900000,
+      "elapsed_sec": 4.6404714999989665,
+      "metrics": {
+        "accuracy": 0.99726,
+        "macro_precision": 0.9964775052585322,
+        "macro_recall": 0.9973885416666667,
+        "macro_f1": 0.9969278176023567,
+        "classwise": {
+          "Number": {
+            "precision": 0.9977550085384648,
+            "recall": 0.9981291666666666,
+            "f1": 0.9979420525318168,
+            "support": 480000
+          },
+          "Fizz": {
+            "precision": 0.9962555249770662,
+            "recall": 0.9955083333333333,
+            "f1": 0.99588178900421,
+            "support": 240000
+          },
+          "Buzz": {
+            "precision": 1.0,
+            "recall": 0.9959166666666667,
+            "f1": 0.9979541564026555,
+            "support": 120000
+          },
+          "FizzBuzz": {
+            "precision": 0.9918994875185981,
+            "recall": 1.0,
+            "f1": 0.9959332724707445,
+            "support": 60000
+          }
+        },
+        "confusion_matrix": [
+          [
+            479102,
+            898,
+            0,
+            0
+          ],
+          [
+            1078,
+            238922,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            119510,
+            490
+          ],
+          [
+            0,
+            0,
+            0,
+            60000
+          ]
+        ],
+        "num_samples": 900000
+      }
+    },
+    "test_7digit": {
+      "name": "test_7digit",
+      "start": 1000000,
+      "end": 9999999,
+      "batch_size": 32768,
+      "num_samples": 9000000,
+      "elapsed_sec": 59.72564449999845,
+      "metrics": {
+        "accuracy": 0.9873635555555555,
+        "macro_precision": 0.9860040700801285,
+        "macro_recall": 0.9878939583333334,
+        "macro_f1": 0.9869207263131571,
+        "classwise": {
+          "Number": {
+            "precision": 0.9892619887130548,
+            "recall": 0.9908079166666667,
+            "f1": 0.9900343492027739,
+            "support": 4800000
+          },
+          "Fizz": {
+            "precision": 0.9815581950086499,
+            "recall": 0.9784904166666667,
+            "f1": 0.9800219050645603,
+            "support": 2400000
+          },
+          "Buzz": {
+            "precision": 0.9972370507788673,
+            "recall": 0.9877508333333334,
+            "f1": 0.9924712748342638,
+            "support": 1200000
+          },
+          "FizzBuzz": {
+            "precision": 0.9759590458199423,
+            "recall": 0.9945266666666667,
+            "f1": 0.9851553761510301,
+            "support": 600000
+          }
+        },
+        "confusion_matrix": [
+          [
+            4755878,
+            44122,
+            0,
+            0
+          ],
+          [
+            51623,
+            2348377,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            1185301,
+            14699
+          ],
+          [
+            0,
+            0,
+            3284,
+            596716
+          ]
+        ],
+        "num_samples": 9000000
+      }
+    },
+    "test_8digit": {
+      "name": "test_8digit",
+      "start": 10000000,
+      "end": 99999999,
+      "batch_size": 32768,
+      "num_samples": 90000000,
+      "elapsed_sec": 540.6667555999993,
+      "metrics": {
+        "accuracy": 0.9710356222222222,
+        "macro_precision": 0.96830008412388,
+        "macro_recall": 0.9696932864583334,
+        "macro_f1": 0.9689567202359437,
+        "classwise": {
+          "Number": {
+            "precision": 0.9754757902965729,
+            "recall": 0.9798502708333333,
+            "f1": 0.9776581372429781,
+            "support": 48000000
+          },
+          "Fizz": {
+            "precision": 0.9593358280975546,
+            "recall": 0.950731625,
+            "f1": 0.9550143470470681,
+            "support": 24000000
+          },
+          "Buzz": {
+            "precision": 0.9861404801518071,
+            "recall": 0.9756144166666667,
+            "f1": 0.980849208894537,
+            "support": 12000000
+          },
+          "FizzBuzz": {
+            "precision": 0.9522482379495856,
+            "recall": 0.9725768333333333,
+            "f1": 0.9623051877591917,
+            "support": 6000000
+          }
+        },
+        "confusion_matrix": [
+          [
+            47032813,
+            967187,
+            0,
+            0
+          ],
+          [
+            1182441,
+            22817559,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            11707373,
+            292627
+          ],
+          [
+            0,
+            0,
+            164539,
+            5835461
+          ]
+        ],
+        "num_samples": 90000000
+      }
+    }
+  },
+  "summary": {
+    "test_6digit": {
+      "accuracy": 0.99726,
+      "macro_precision": 0.9964775052585322,
+      "macro_recall": 0.9973885416666667,
+      "macro_f1": 0.9969278176023567,
+      "num_samples": 900000,
+      "elapsed_sec": 4.6404714999989665
+    },
+    "test_7digit": {
+      "accuracy": 0.9873635555555555,
+      "macro_precision": 0.9860040700801285,
+      "macro_recall": 0.9878939583333334,
+      "macro_f1": 0.9869207263131571,
+      "num_samples": 9000000,
+      "elapsed_sec": 59.72564449999845
+    },
+    "test_8digit": {
+      "accuracy": 0.9710356222222222,
+      "macro_precision": 0.96830008412388,
+      "macro_recall": 0.9696932864583334,
+      "macro_f1": 0.9689567202359437,
+      "num_samples": 90000000,
+      "elapsed_sec": 540.6667555999993
+    }
+  }
+}

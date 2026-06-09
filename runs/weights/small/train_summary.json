@@ -1,0 +1,15 @@
+{
+  "name": "small",
+  "seed": 42,
+  "config_path": "configs\\small.yaml",
+  "model_path": "runs\\weights\\small\\model.pt",
+  "num_parameters": 5108,
+  "epochs": 100,
+  "batch_size": 1024,
+  "lr": 0.001,
+  "weight_decay": 0.0001,
+  "final_loss": 0.0003710155221829402,
+  "final_accuracy": 1.0,
+  "final_lr": 0.001,
+  "total_elapsed_sec": 231.95295790001546
+}

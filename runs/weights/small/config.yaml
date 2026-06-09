@@ -1,0 +1,39 @@
+name: small
+seed: 42
+data:
+  train_start: 1
+  train_end: 99999
+  max_digits: 5
+  pad_token_id: 10
+  num_classes: 4
+model:
+  vocab_size: 11
+  embedding_dim: 16
+  hidden_dim: 32
+  num_layers: 1
+  dropout: 0.0
+  bidirectional: false
+  padding_idx: 10
+training:
+  epochs: 100
+  batch_size: 1024
+  lr: 0.001
+  weight_decay: 0.0001
+  num_workers: 4
+  grad_clip_norm: 1.0
+  device: auto
+eval:
+  batch_size: 32768
+  digit_ranges:
+    test_6digit:
+    - 100000
+    - 999999
+    test_7digit:
+    - 1000000
+    - 9999999
+    test_8digit:
+    - 10000000
+    - 99999999
+output:
+  weight_dir: runs\weights
+  image_dir: runs\images
