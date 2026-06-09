@@ -27,7 +27,7 @@ training:
   device: auto
 
 eval:
-  batch_size: 32768
+  batch_size: 524288
   digit_ranges:
     test_6digit: [100000, 999999]
     test_7digit: [1000000, 9999999]

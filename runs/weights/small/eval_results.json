@@ -9,9 +9,9 @@
       "name": "test_6digit",
       "start": 100000,
       "end": 999999,
-      "batch_size": 32768,
+      "batch_size": 524288,
       "num_samples": 900000,
-      "elapsed_sec": 4.6404714999989665,
+      "elapsed_sec": 4.772982700000284,
       "metrics": {
         "accuracy": 0.99726,
         "macro_precision": 0.9964775052585322,
@@ -76,9 +76,9 @@
       "name": "test_7digit",
       "start": 1000000,
       "end": 9999999,
-      "batch_size": 32768,
+      "batch_size": 524288,
       "num_samples": 9000000,
-      "elapsed_sec": 59.72564449999845,
+      "elapsed_sec": 50.60169769999993,
       "metrics": {
         "accuracy": 0.9873635555555555,
         "macro_precision": 0.9860040700801285,
@@ -143,9 +143,9 @@
       "name": "test_8digit",
       "start": 10000000,
       "end": 99999999,
-      "batch_size": 32768,
+      "batch_size": 524288,
       "num_samples": 90000000,
-      "elapsed_sec": 540.6667555999993,
+      "elapsed_sec": 516.5743283999982,
       "metrics": {
         "accuracy": 0.9710356222222222,
         "macro_precision": 0.96830008412388,
@@ -214,7 +214,7 @@
       "macro_recall": 0.9973885416666667,
       "macro_f1": 0.9969278176023567,
       "num_samples": 900000,
-      "elapsed_sec": 4.6404714999989665
+      "elapsed_sec": 4.772982700000284
     },
     "test_7digit": {
       "accuracy": 0.9873635555555555,
@@ -222,7 +222,7 @@
       "macro_recall": 0.9878939583333334,
       "macro_f1": 0.9869207263131571,
       "num_samples": 9000000,
-      "elapsed_sec": 59.72564449999845
+      "elapsed_sec": 50.60169769999993
     },
     "test_8digit": {
       "accuracy": 0.9710356222222222,
@@ -230,7 +230,7 @@
       "macro_recall": 0.9696932864583334,
       "macro_f1": 0.9689567202359437,
       "num_samples": 90000000,
-      "elapsed_sec": 540.6667555999993
+      "elapsed_sec": 516.5743283999982
     }
   }
 }

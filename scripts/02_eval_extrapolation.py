@@ -4,10 +4,11 @@ import argparse
 import sys
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Literal, TypeAlias
 
 import matplotlib.pyplot as plt
+import numpy as np
 import torch
+from matplotlib.colors import SymLogNorm
 from torch import nn
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -23,10 +24,7 @@ from fizzbuzz.evaluator import (
 from fizzbuzz.metrics import ClassificationMetrics
 from fizzbuzz.model import build_model, count_parameters
 from fizzbuzz.trainer import resolve_device
-from fizzbuzz.utils import JsonDict, JsonValue, ensure_dir, save_json, seed_everything
-
-
-MetricName: TypeAlias = Literal["accuracy", "macro_f1"]
+from fizzbuzz.utils import JsonDict, ensure_dir, save_json, seed_everything
 
 
 DEFAULT_CONFIG_PATHS: tuple[Path, ...] = (
@@ -73,9 +71,9 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
-        "--skip-plots",
+        "--no-confmat",
         action="store_true",
-        help="Skip plot generation.",
+        help="Skip confusion matrix image generation.",
     )
 
     return parser.parse_args()
@@ -302,22 +300,15 @@ def save_merged_summary(
     return summary_path
 
 
-def plot_metric_by_range(
+def save_confusion_matrix_plots(
     results: Mapping[str, ExtrapolationEvalResult],
-    *,
-    metric_name: MetricName,
-    output_path: Path,
 ) -> None:
-    """モデルサイズ別・桁数別の評価指標を折れ線グラフで保存します。
+    """全モデル・全評価範囲のconfusion matrix画像を保存します。
 
     Parameters
     ----------
     results : Mapping[str, ExtrapolationEvalResult]
         モデル名から外挿評価結果への対応。
-    metric_name : {"accuracy", "macro_f1"}
-        可視化する指標名。
-    output_path : pathlib.Path
-        保存先画像パス。
 
     Returns
     -------
@@ -326,48 +317,51 @@ def plot_metric_by_range(
     Raises
     ------
     ValueError
-        ``results`` が空の場合、または未対応の指標名の場合。
+        ``results`` が空の場合。
     """
     if len(results) == 0:
         raise ValueError("results must not be empty.")
 
-    if metric_name not in {"accuracy", "macro_f1"}:
-        raise ValueError(
-            f"metric_name must be 'accuracy' or 'macro_f1', got {metric_name!r}."
-        )
-
-    first_result = next(iter(results.values()))
-    range_names = list(first_result.results.keys())
-
-    x_values = list(range(len(range_names)))
-
-    fig, ax = plt.subplots(figsize=(8, 5))
+    image_dir = ensure_dir(PROJECT_ROOT / "runs" / "images" / "confusion_matrix")
 
     for model_name, result in results.items():
-        y_values = [
-            get_metric_value(result.results[range_name].metrics, metric_name)
-            for range_name in range_names
-        ]
-        ax.plot(
-            x_values,
-            y_values,
-            marker="o",
-            label=model_name,
-        )
+        for range_name, range_result in result.results.items():
+            output_path = image_dir / f"confusion_matrix_{model_name}_{range_name}.png"
+            title = f"{model_name} - {format_range_name(range_name)}"
 
-    ax.set_xticks(x_values)
-    ax.set_xticklabels([format_range_name(name) for name in range_names])
-    ax.set_ylim(0.0, 1.02)
-    ax.set_xlabel("Evaluation range")
-    ax.set_ylabel(format_metric_name(metric_name))
-    ax.set_title(f"{format_metric_name(metric_name)} by extrapolation range")
-    ax.grid(True, alpha=0.3)
-    ax.legend()
-    fig.tight_layout()
+            plot_confusion_matrix(
+                range_result.metrics,
+                output_path=output_path,
+                title=title,
+            )
 
-    ensure_dir(output_path.parent)
-    fig.savefig(output_path, dpi=200)
-    plt.close(fig)
+    print(f"[eval] confusion matrix plots saved={image_dir}")
+
+
+def infer_confmat_vmax(metrics: ClassificationMetrics) -> int:
+    """評価サンプル数からconfusion matrixの表示上限を推定します。
+
+    Parameters
+    ----------
+    metrics : ClassificationMetrics
+        可視化対象の分類指標。
+
+    Returns
+    -------
+    int
+        カラーマップの上限値。
+    """
+    num_samples = metrics.num_samples
+
+    if num_samples <= 1_000_000:
+        return 1_000_000
+    if num_samples <= 10_000_000:
+        return 10_000_000
+    if num_samples <= 100_000_000:
+        return 100_000_000
+
+    exponent = int(np.ceil(np.log10(num_samples)))
+    return int(10**exponent)
 
 
 def plot_confusion_matrix(
@@ -376,7 +370,7 @@ def plot_confusion_matrix(
     output_path: Path,
     title: str,
 ) -> None:
-    """confusion matrixを画像として保存します。
+    """confusion matrixを個数ベース・対数カラースケールで画像保存します。
 
     Parameters
     ----------
@@ -392,17 +386,27 @@ def plot_confusion_matrix(
     None
     """
     class_names = list(metrics.classwise.keys())
-    cm = torch.tensor(metrics.confusion_matrix, dtype=torch.float64)
+    confusion_matrix = np.asarray(metrics.confusion_matrix, dtype=np.int64)
 
-    row_sums = cm.sum(dim=1, keepdim=True)
-    normalized = torch.zeros_like(cm)
-    valid_rows = row_sums.squeeze(1) > 0
-    normalized[valid_rows] = cm[valid_rows] / row_sums[valid_rows]
+    if confusion_matrix.size == 0:
+        raise ValueError("confusion_matrix must not be empty.")
+    if np.any(confusion_matrix < 0):
+        raise ValueError("confusion_matrix must not contain negative values.")
 
-    values = normalized.numpy()
+    vmax = infer_confmat_vmax(metrics)
 
     fig, ax = plt.subplots(figsize=(6, 5))
-    image = ax.imshow(values, vmin=0.0, vmax=1.0)
+    image = ax.imshow(
+        confusion_matrix,
+        cmap="Blues",
+        norm=SymLogNorm(
+            linthresh=1.0,
+            linscale=1.0,
+            vmin=0,
+            vmax=vmax,
+            base=10,
+        ),
+    )
 
     ax.set_xticks(range(len(class_names)))
     ax.set_yticks(range(len(class_names)))
@@ -412,109 +416,35 @@ def plot_confusion_matrix(
     ax.set_ylabel("True label")
     ax.set_title(title)
 
-    for row_idx in range(values.shape[0]):
-        for col_idx in range(values.shape[1]):
+    for row_idx in range(confusion_matrix.shape[0]):
+        for col_idx in range(confusion_matrix.shape[1]):
+            count = int(confusion_matrix[row_idx, col_idx])
+            text = f"{count:,}"
+
+            if count == 0:
+                text_color = "black"
+            else:
+                log_ratio = np.log10(count + 1) / np.log10(vmax + 1)
+                text_color = "white" if log_ratio > 0.55 else "black"
+
             ax.text(
                 col_idx,
                 row_idx,
-                f"{values[row_idx, col_idx]:.2f}",
+                text,
                 ha="center",
                 va="center",
+                color=text_color,
+                fontsize=9,
             )
 
-    fig.colorbar(image, ax=ax, fraction=0.046, pad=0.04)
+    colorbar = fig.colorbar(image, ax=ax, fraction=0.046, pad=0.04)
+    colorbar.set_label("Count")
+
     fig.tight_layout()
 
     ensure_dir(output_path.parent)
     fig.savefig(output_path, dpi=200)
     plt.close(fig)
-
-
-def make_plots(results: Mapping[str, ExtrapolationEvalResult]) -> None:
-    """評価結果から記事用の図を作成します。
-
-    Parameters
-    ----------
-    results : Mapping[str, ExtrapolationEvalResult]
-        モデル名から外挿評価結果への対応。
-
-    Returns
-    -------
-    None
-    """
-    image_dir = ensure_dir(PROJECT_ROOT / "runs" / "images")
-
-    plot_metric_by_range(
-        results,
-        metric_name="accuracy",
-        output_path=image_dir / "accuracy_by_digits.png",
-    )
-    plot_metric_by_range(
-        results,
-        metric_name="macro_f1",
-        output_path=image_dir / "macro_f1_by_digits.png",
-    )
-
-    if "large" in results and "test_8digit" in results["large"].results:
-        plot_confusion_matrix(
-            results["large"].results["test_8digit"].metrics,
-            output_path=image_dir / "confusion_matrix_large_8digit.png",
-            title="Large model confusion matrix on 8-digit test",
-        )
-
-    print(f"[eval] plots saved={image_dir}")
-
-
-def get_metric_value(
-    metrics: ClassificationMetrics,
-    metric_name: MetricName,
-) -> float:
-    """ClassificationMetricsから指定指標を取得します。
-
-    Parameters
-    ----------
-    metrics : ClassificationMetrics
-        評価指標。
-    metric_name : {"accuracy", "macro_f1"}
-        取得する指標名。
-
-    Returns
-    -------
-    float
-        指標値。
-
-    Raises
-    ------
-    ValueError
-        未対応の指標名の場合。
-    """
-    if metric_name == "accuracy":
-        return metrics.accuracy
-    if metric_name == "macro_f1":
-        return metrics.macro_f1
-
-    raise ValueError(f"Unsupported metric_name: {metric_name!r}")
-
-
-def format_metric_name(metric_name: MetricName) -> str:
-    """図表示用に指標名を整形します。
-
-    Parameters
-    ----------
-    metric_name : {"accuracy", "macro_f1"}
-        指標名。
-
-    Returns
-    -------
-    str
-        表示用の指標名。
-    """
-    if metric_name == "accuracy":
-        return "Accuracy"
-    if metric_name == "macro_f1":
-        return "Macro F1"
-
-    raise ValueError(f"Unsupported metric_name: {metric_name!r}")
 
 
 def format_range_name(range_name: str) -> str:
@@ -620,8 +550,8 @@ def main() -> None:
         summary_path = save_merged_summary(results)
         print(f"\n[eval] all done summary={summary_path}")
 
-        if not args.skip_plots:
-            make_plots(results)
+        if not args.no_confmat:
+            save_confusion_matrix_plots(results)
 
         return
 
@@ -630,10 +560,8 @@ def main() -> None:
         weight_path=args.weight,
     )
 
-    single_results = {model_name: result}
-
-    if not args.skip_plots:
-        make_plots(single_results)
+    if not args.no_confmat:
+        save_confusion_matrix_plots({model_name: result})
 
 
 if __name__ == "__main__":
