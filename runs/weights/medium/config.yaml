@@ -1,4 +1,4 @@
-name: small
+name: medium
 seed: 42
 data:
   train_start: 1
@@ -8,9 +8,9 @@ data:
   num_classes: 4
 model:
   vocab_size: 11
-  embedding_dim: 16
-  hidden_dim: 32
-  num_layers: 1
+  embedding_dim: 64
+  hidden_dim: 128
+  num_layers: 2
   dropout: 0.0
   bidirectional: false
   padding_idx: 10

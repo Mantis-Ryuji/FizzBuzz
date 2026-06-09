@@ -1,0 +1,49 @@
+{
+  "by_model": {
+    "small": {
+      "name": "small",
+      "seed": 42,
+      "config_path": "configs\\small.yaml",
+      "model_path": "runs\\weights\\small\\model.pt",
+      "num_parameters": 5108,
+      "epochs": 100,
+      "batch_size": 1024,
+      "lr": 0.001,
+      "weight_decay": 0.0001,
+      "final_loss": 0.00020372711183874672,
+      "final_accuracy": 1.0,
+      "final_lr": 0.001,
+      "total_elapsed_sec": 247.80636440001035
+    },
+    "medium": {
+      "name": "medium",
+      "seed": 42,
+      "config_path": "configs\\medium.yaml",
+      "model_path": "runs\\weights\\medium\\model.pt",
+      "num_parameters": 174788,
+      "epochs": 100,
+      "batch_size": 1024,
+      "lr": 0.001,
+      "weight_decay": 0.0001,
+      "final_loss": 4.028220037266876e-06,
+      "final_accuracy": 1.0,
+      "final_lr": 0.001,
+      "total_elapsed_sec": 258.12937290000264
+    },
+    "large": {
+      "name": "large",
+      "seed": 42,
+      "config_path": "configs\\large.yaml",
+      "model_path": "runs\\weights\\large\\model.pt",
+      "num_parameters": 5915396,
+      "epochs": 100,
+      "batch_size": 1024,
+      "lr": 0.001,
+      "weight_decay": 0.0001,
+      "final_loss": 5.098633015034337e-06,
+      "final_accuracy": 1.0,
+      "final_lr": 0.001,
+      "total_elapsed_sec": 311.31370670000615
+    }
+  }
+}
