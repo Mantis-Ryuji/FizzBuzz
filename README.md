@@ -1,6 +1,6 @@
 # FizzBuzz Digit Extrapolation Experiment
 
-ニューラルネットワークが FizzBuzz の規則を、整数の10進数字列から学習し、学習時に見ていない桁数へ外挿できるかを検証する実験リポジトリです。
+ニューラルネットワークが学習した FizzBuzz の規則を、学習時に見ていない桁数へ外挿できるかを検証する実験リポジトリです。
 
 入力には `n % 3` や `n % 5` は与えません。整数を10進数字列として入力し、Digit Embedding + GRU + Linear classifier により、以下の4クラス分類を行います。
 

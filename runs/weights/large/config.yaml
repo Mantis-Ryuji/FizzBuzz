@@ -23,7 +23,7 @@ training:
   grad_clip_norm: 1.0
   device: auto
 eval:
-  batch_size: 524288
+  batch_size: 65536
   digit_ranges:
     test_6digit:
     - 100000
