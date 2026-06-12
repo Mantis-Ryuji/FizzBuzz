@@ -1,0 +1,242 @@
+{
+  "name": "large",
+  "seed": 42,
+  "config_path": "configs\\large.yaml",
+  "sweep_dir": "runs\\grokking\\large",
+  "epoch_checkpoints": [
+    10,
+    50,
+    100,
+    500,
+    1000,
+    5000,
+    10000
+  ],
+  "num_parameters": 5915396,
+  "ranges": [
+    "train",
+    "test_6digit",
+    "test_7digit",
+    "test_8digit"
+  ],
+  "records": [
+    {
+      "epoch": 10,
+      "weight_path": "runs\\grokking\\large\\milestones\\epoch_000010.pt",
+      "metrics": {
+        "train": {
+          "accuracy": 0.6666666666666666,
+          "macro_f1": 0.4000022501181298,
+          "num_samples": 99999,
+          "elapsed_sec": 2.5399921999924118
+        },
+        "test_6digit": {
+          "accuracy": 0.6666666666666666,
+          "macro_f1": 0.4,
+          "num_samples": 900000,
+          "elapsed_sec": 6.976951899996493
+        },
+        "test_7digit": {
+          "accuracy": 0.6666666666666666,
+          "macro_f1": 0.4,
+          "num_samples": 9000000,
+          "elapsed_sec": 74.5854709999985
+        },
+        "test_8digit": {
+          "accuracy": 0.6666666666666666,
+          "macro_f1": 0.4,
+          "num_samples": 90000000,
+          "elapsed_sec": 792.1719955000008
+        }
+      },
+      "elapsed_sec": 876.33234980001
+    },
+    {
+      "epoch": 50,
+      "weight_path": "runs\\grokking\\large\\milestones\\epoch_000050.pt",
+      "metrics": {
+        "train": {
+          "accuracy": 0.6666666666666666,
+          "macro_f1": 0.4000022501181298,
+          "num_samples": 99999,
+          "elapsed_sec": 2.504074300013599
+        },
+        "test_6digit": {
+          "accuracy": 0.6666666666666666,
+          "macro_f1": 0.4,
+          "num_samples": 900000,
+          "elapsed_sec": 6.950036199996248
+        },
+        "test_7digit": {
+          "accuracy": 0.6666666666666666,
+          "macro_f1": 0.4,
+          "num_samples": 9000000,
+          "elapsed_sec": 74.83450810000068
+        },
+        "test_8digit": {
+          "accuracy": 0.6666666666666666,
+          "macro_f1": 0.4,
+          "num_samples": 90000000,
+          "elapsed_sec": 792.9009330999979
+        }
+      },
+      "elapsed_sec": 877.2316087000072
+    },
+    {
+      "epoch": 100,
+      "weight_path": "runs\\grokking\\large\\milestones\\epoch_000100.pt",
+      "metrics": {
+        "train": {
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "num_samples": 99999,
+          "elapsed_sec": 2.5096465999959037
+        },
+        "test_6digit": {
+          "accuracy": 0.9703755555555555,
+          "macro_f1": 0.9709744531014646,
+          "num_samples": 900000,
+          "elapsed_sec": 7.050986699992791
+        },
+        "test_7digit": {
+          "accuracy": 0.8230891111111112,
+          "macro_f1": 0.8187112150409113,
+          "num_samples": 9000000,
+          "elapsed_sec": 74.4875694999937
+        },
+        "test_8digit": {
+          "accuracy": 0.6502239444444444,
+          "macro_f1": 0.6186901304483934,
+          "num_samples": 90000000,
+          "elapsed_sec": 794.3466618999955
+        }
+      },
+      "elapsed_sec": 878.4385758999997
+    },
+    {
+      "epoch": 500,
+      "weight_path": "runs\\grokking\\large\\milestones\\epoch_000500.pt",
+      "metrics": {
+        "train": {
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "num_samples": 99999,
+          "elapsed_sec": 2.493237400005455
+        },
+        "test_6digit": {
+          "accuracy": 0.9697233333333334,
+          "macro_f1": 0.9710708484347866,
+          "num_samples": 900000,
+          "elapsed_sec": 6.935098999994807
+        },
+        "test_7digit": {
+          "accuracy": 0.8127278888888889,
+          "macro_f1": 0.81078375717055,
+          "num_samples": 9000000,
+          "elapsed_sec": 74.66437600000063
+        },
+        "test_8digit": {
+          "accuracy": 0.6334275222222222,
+          "macro_f1": 0.6082504245746171,
+          "num_samples": 90000000,
+          "elapsed_sec": 792.7137598000118
+        }
+      },
+      "elapsed_sec": 876.8505178999912
+    },
+    {
+      "epoch": 1000,
+      "weight_path": "runs\\grokking\\large\\milestones\\epoch_001000.pt",
+      "metrics": {
+        "train": {
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "num_samples": 99999,
+          "elapsed_sec": 2.494514399993932
+        },
+        "test_6digit": {
+          "accuracy": 0.9785611111111111,
+          "macro_f1": 0.9781857731014649,
+          "num_samples": 900000,
+          "elapsed_sec": 6.738877499999944
+        },
+        "test_7digit": {
+          "accuracy": 0.8354291111111111,
+          "macro_f1": 0.8343003868495127,
+          "num_samples": 9000000,
+          "elapsed_sec": 72.38502580000204
+        },
+        "test_8digit": {
+          "accuracy": 0.6514203444444444,
+          "macro_f1": 0.6292491131322612,
+          "num_samples": 90000000,
+          "elapsed_sec": 767.9898046000017
+        }
+      },
+      "elapsed_sec": 849.6674856000027
+    },
+    {
+      "epoch": 5000,
+      "weight_path": "runs\\grokking\\large\\milestones\\epoch_005000.pt",
+      "metrics": {
+        "train": {
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "num_samples": 99999,
+          "elapsed_sec": 2.543684599993867
+        },
+        "test_6digit": {
+          "accuracy": 0.9862544444444444,
+          "macro_f1": 0.9841961285590639,
+          "num_samples": 900000,
+          "elapsed_sec": 6.760268300000462
+        },
+        "test_7digit": {
+          "accuracy": 0.9243694444444445,
+          "macro_f1": 0.9095267641556433,
+          "num_samples": 9000000,
+          "elapsed_sec": 71.88769670001057
+        },
+        "test_8digit": {
+          "accuracy": 0.8207020666666667,
+          "macro_f1": 0.782445621432853,
+          "num_samples": 90000000,
+          "elapsed_sec": 766.5838692999969
+        }
+      },
+      "elapsed_sec": 847.8175916000037
+    },
+    {
+      "epoch": 10000,
+      "weight_path": "runs\\grokking\\large\\milestones\\epoch_010000.pt",
+      "metrics": {
+        "train": {
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "num_samples": 99999,
+          "elapsed_sec": 2.324337400001241
+        },
+        "test_6digit": {
+          "accuracy": 0.9875255555555555,
+          "macro_f1": 0.9867206759987218,
+          "num_samples": 900000,
+          "elapsed_sec": 6.726049700009753
+        },
+        "test_7digit": {
+          "accuracy": 0.9389498888888889,
+          "macro_f1": 0.93484621878522,
+          "num_samples": 9000000,
+          "elapsed_sec": 72.12923039999441
+        },
+        "test_8digit": {
+          "accuracy": 0.8419856444444445,
+          "macro_f1": 0.8251596021729408,
+          "num_samples": 90000000,
+          "elapsed_sec": 770.0524625000107
+        }
+      },
+      "elapsed_sec": 851.286686300009
+    }
+  ],
+  "plot_path": "runs\\images\\grokking\\grokking_large.png"
+}

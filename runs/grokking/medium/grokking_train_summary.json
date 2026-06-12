@@ -1,0 +1,31 @@
+{
+  "name": "medium",
+  "status": "completed",
+  "seed": 42,
+  "config_path": "configs\\medium.yaml",
+  "output_dir": "runs\\grokking\\medium",
+  "model_path": "runs\\grokking\\medium\\model.pt",
+  "checkpoint_path": "runs\\grokking\\medium\\last.pt",
+  "history_path": "runs\\grokking\\medium\\history.json",
+  "milestone_dir": "runs\\grokking\\medium\\milestones",
+  "milestone_epochs": [
+    10,
+    50,
+    100,
+    500,
+    1000,
+    5000,
+    10000
+  ],
+  "checkpoint_every_epochs": 10,
+  "num_parameters": 174788,
+  "epochs": 10000,
+  "batch_size": 1024,
+  "lr": 0.001,
+  "weight_decay": 0.0001,
+  "final_epoch": 10000,
+  "final_loss": 0.0,
+  "final_accuracy": 1.0,
+  "final_lr": 0.001,
+  "total_elapsed_sec": 27543.277640300286
+}

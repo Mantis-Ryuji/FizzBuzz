@@ -1,5 +1,3 @@
-# src/fizzbuzz/__init__.py
-
 """FizzBuzz digit-sequence extrapolation experiment.
 
 This package provides utilities for training and evaluating neural sequence

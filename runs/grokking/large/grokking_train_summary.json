@@ -1,0 +1,31 @@
+{
+  "name": "large",
+  "status": "completed",
+  "seed": 42,
+  "config_path": "configs\\large.yaml",
+  "output_dir": "runs\\grokking\\large",
+  "model_path": "runs\\grokking\\large\\model.pt",
+  "checkpoint_path": "runs\\grokking\\large\\last.pt",
+  "history_path": "runs\\grokking\\large\\history.json",
+  "milestone_dir": "runs\\grokking\\large\\milestones",
+  "milestone_epochs": [
+    10,
+    50,
+    100,
+    500,
+    1000,
+    5000,
+    10000
+  ],
+  "checkpoint_every_epochs": 10,
+  "num_parameters": 5915396,
+  "epochs": 10000,
+  "batch_size": 1024,
+  "lr": 0.001,
+  "weight_decay": 0.0001,
+  "final_epoch": 10000,
+  "final_loss": 1.716630803678338e-10,
+  "final_accuracy": 1.0,
+  "final_lr": 0.001,
+  "total_elapsed_sec": 32730.965224299798
+}

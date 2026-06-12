@@ -1,0 +1,31 @@
+{
+  "epoch": 500,
+  "weight_path": "runs\\grokking\\small\\milestones\\epoch_000500.pt",
+  "metrics": {
+    "train": {
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "num_samples": 99999,
+      "elapsed_sec": 2.136921199999051
+    },
+    "test_6digit": {
+      "accuracy": 0.99727,
+      "macro_f1": 0.9974976079123017,
+      "num_samples": 900000,
+      "elapsed_sec": 4.84278049999557
+    },
+    "test_7digit": {
+      "accuracy": 0.9803394444444444,
+      "macro_f1": 0.9796037581873974,
+      "num_samples": 9000000,
+      "elapsed_sec": 48.784546499999124
+    },
+    "test_8digit": {
+      "accuracy": 0.9527321555555556,
+      "macro_f1": 0.9480543819189123,
+      "num_samples": 90000000,
+      "elapsed_sec": 510.0770704000024
+    }
+  },
+  "elapsed_sec": 565.8543403999938
+}

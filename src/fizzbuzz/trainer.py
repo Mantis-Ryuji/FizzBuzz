@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
+import warnings
 from time import perf_counter
 from typing import TypeAlias
 
@@ -17,6 +19,167 @@ from fizzbuzz.utils import JsonDict, ensure_dir, save_json
 
 
 CheckpointDict: TypeAlias = dict[str, object]
+
+
+def _as_int(value: object, *, name: str) -> int:
+    """objectを厳密にintへ変換します。
+
+    Parameters
+    ----------
+    value : object
+        変換対象の値です。
+    name : str
+        エラーメッセージに使う値の名前です。
+
+    Returns
+    -------
+    int
+        変換後の整数です。
+
+    Raises
+    ------
+    ValueError
+        value が int でない場合。
+    """
+    if type(value) is not int:
+        raise ValueError(f"{name} must be int, got {type(value).__name__}.")
+    return value
+
+
+def _as_float(value: object, *, name: str) -> float:
+    """objectをfloatへ変換します。
+
+    Parameters
+    ----------
+    value : object
+        変換対象の値です。
+    name : str
+        エラーメッセージに使う値の名前です。
+
+    Returns
+    -------
+    float
+        変換後の浮動小数点数です。
+
+    Raises
+    ------
+    ValueError
+        value が数値でない場合。
+    """
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{name} must be numeric, got {type(value).__name__}.")
+    return float(value)
+
+
+def _to_cpu_byte_tensor_or_none(
+    value: object,
+    *,
+    name: str,
+) -> torch.Tensor | None:
+    """RNG stateをCPU上のByteTensorへ正規化します。
+
+    Parameters
+    ----------
+    value : object
+        正規化対象のRNG stateです。
+    name : str
+        warning messageに使う名前です。
+
+    Returns
+    -------
+    torch.Tensor | None
+        CPU上の1次元ByteTensorです。復元できない場合はNoneです。
+    """
+    if not isinstance(value, torch.Tensor):
+        warnings.warn(
+            f"Skip restoring {name}: expected torch.Tensor, "
+            f"got {type(value).__name__}.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+        return None
+
+    tensor = value.detach().to(device="cpu", dtype=torch.uint8).contiguous()
+
+    if tensor.ndim != 1:
+        warnings.warn(
+            f"Skip restoring {name}: expected 1D RNG state tensor, "
+            f"got shape={tuple(tensor.shape)}.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+        return None
+
+    return tensor
+
+
+def _restore_rng_state_from_checkpoint(rng_state: object) -> None:
+    """checkpoint内のRNG stateを可能な範囲で復元します。
+
+    Parameters
+    ----------
+    rng_state : object
+        checkpointに保存された ``rng_state`` です。
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    CUDA RNG stateはPyTorchのversionや ``map_location`` によって
+    GPU tensorとして復元されることがあります。``torch.cuda.set_rng_state_all`` は
+    CPU上のByteTensorを要求するため、ここでCPU ByteTensorへ正規化します。
+    RNG stateは再現性用の補助情報なので、形式が不正な場合でもmodel/optimizerの
+    resume自体は止めずにwarningを出してスキップします。
+    """
+    if not isinstance(rng_state, Mapping):
+        warnings.warn(
+            f"Skip restoring RNG state: expected mapping, got {type(rng_state).__name__}.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+        return
+
+    torch_rng_state = rng_state.get("torch")
+    if torch_rng_state is not None:
+        torch_state = _to_cpu_byte_tensor_or_none(
+            torch_rng_state,
+            name="rng_state['torch']",
+        )
+        if torch_state is not None:
+            torch.set_rng_state(torch_state)
+
+    cuda_rng_state = rng_state.get("cuda")
+    if not torch.cuda.is_available() or cuda_rng_state is None:
+        return
+
+    if isinstance(cuda_rng_state, torch.Tensor):
+        raw_cuda_states: list[object] = [cuda_rng_state]
+    elif isinstance(cuda_rng_state, (list, tuple)):
+        raw_cuda_states = list(cuda_rng_state)
+    else:
+        warnings.warn(
+            "Skip restoring rng_state['cuda']: expected tensor, list, or tuple, "
+            f"got {type(cuda_rng_state).__name__}.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+        return
+
+    cuda_states: list[torch.Tensor] = []
+    for index, raw_state in enumerate(raw_cuda_states):
+        cuda_state = _to_cpu_byte_tensor_or_none(
+            raw_state,
+            name=f"rng_state['cuda'][{index}]",
+        )
+        if cuda_state is not None:
+            cuda_states.append(cuda_state)
+
+    if len(cuda_states) == 0:
+        return
+
+    torch.cuda.set_rng_state_all(cuda_states[: torch.cuda.device_count()])
 
 
 @dataclass(frozen=True)
@@ -58,6 +221,44 @@ class TrainEpochResult:
             "lr": self.lr,
             "elapsed_sec": self.elapsed_sec,
         }
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, object]) -> TrainEpochResult:
+        """辞書から1 epoch分の学習結果を復元します。
+
+        Parameters
+        ----------
+        data : collections.abc.Mapping[str, object]
+            ``to_dict`` で保存された辞書です。
+
+        Returns
+        -------
+        TrainEpochResult
+            復元されたepoch結果。
+
+        Raises
+        ------
+        KeyError
+            必要なキーが存在しない場合。
+        ValueError
+            値の型が不正な場合。
+        """
+        required_keys = {"epoch", "loss", "accuracy", "lr", "elapsed_sec"}
+        missing_keys = required_keys - set(data.keys())
+        if len(missing_keys) > 0:
+            raise KeyError(f"epoch result is missing keys: {sorted(missing_keys)}")
+
+        epoch = _as_int(data["epoch"], name="epoch")
+        if epoch <= 0:
+            raise ValueError(f"epoch must be positive, got {epoch}.")
+
+        return cls(
+            epoch=epoch,
+            loss=_as_float(data["loss"], name="loss"),
+            accuracy=_as_float(data["accuracy"], name="accuracy"),
+            lr=_as_float(data["lr"], name="lr"),
+            elapsed_sec=_as_float(data["elapsed_sec"], name="elapsed_sec"),
+        )
 
 
 @dataclass
@@ -102,6 +303,47 @@ class TrainHistory:
             "lr": [record.lr for record in self.records],
             "elapsed_sec": [record.elapsed_sec for record in self.records],
         }
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, object]) -> TrainHistory:
+        """辞書から学習履歴を復元します。
+
+        Parameters
+        ----------
+        data : collections.abc.Mapping[str, object]
+            ``to_dict`` で保存された辞書です。
+
+        Returns
+        -------
+        TrainHistory
+            復元された学習履歴。
+
+        Raises
+        ------
+        KeyError
+            ``records`` キーが存在しない場合。
+        ValueError
+            ``records`` の形式が不正な場合。
+        """
+        if "records" not in data:
+            raise KeyError("history is missing key: 'records'")
+
+        records_obj = data["records"]
+        if not isinstance(records_obj, list):
+            raise ValueError(
+                f"history records must be list, got {type(records_obj).__name__}."
+            )
+
+        records: list[TrainEpochResult] = []
+        for index, record_obj in enumerate(records_obj):
+            if not isinstance(record_obj, Mapping):
+                raise ValueError(
+                    f"history record at index {index} must be a mapping, "
+                    f"got {type(record_obj).__name__}."
+                )
+            records.append(TrainEpochResult.from_dict(record_obj))
+
+        return cls(records=records)
 
 
 class Trainer:
@@ -175,6 +417,11 @@ class Trainer:
         save_model: bool = True,
         model_filename: str = "model.pt",
         history_filename: str = "history.json",
+        resume: bool = False,
+        checkpoint_filename: str = "last.pt",
+        checkpoint_every_epochs: int = 100,
+        milestone_epochs: tuple[int, ...] = (),
+        milestone_dirname: str = "milestones",
     ) -> TrainHistory:
         """モデルを固定epochで学習します。
 
@@ -185,9 +432,19 @@ class Trainer:
         save_model : bool, default=True
             Trueの場合、学習終了後に最終重みを保存します。
         model_filename : str, default="model.pt"
-            保存する重みファイル名です。
+            保存する最終重みファイル名です。
         history_filename : str, default="history.json"
             保存する学習履歴ファイル名です。
+        resume : bool, default=False
+            Trueの場合、``checkpoint_filename`` が存在すれば学習状態を復元します。
+        checkpoint_filename : str, default="last.pt"
+            resume用の完全checkpointファイル名です。
+        checkpoint_every_epochs : int, default=100
+            完全checkpointを保存するepoch間隔です。
+        milestone_epochs : tuple[int, ...], default=()
+            評価用の重みsnapshotを保存するepoch番号です。
+        milestone_dirname : str, default="milestones"
+            評価用の重みsnapshotを保存するディレクトリ名です。
 
         Returns
         -------
@@ -197,15 +454,48 @@ class Trainer:
         Raises
         ------
         ValueError
-            ファイル名が空の場合。
+            ファイル名、保存間隔、または milestone epoch が不正な場合。
         """
         if model_filename.strip() == "":
             raise ValueError("model_filename must not be empty.")
         if history_filename.strip() == "":
             raise ValueError("history_filename must not be empty.")
+        if checkpoint_filename.strip() == "":
+            raise ValueError("checkpoint_filename must not be empty.")
+        if milestone_dirname.strip() == "":
+            raise ValueError("milestone_dirname must not be empty.")
+        if checkpoint_every_epochs <= 0:
+            raise ValueError(
+                "checkpoint_every_epochs must be positive, "
+                f"got {checkpoint_every_epochs}."
+            )
+        if any(epoch <= 0 for epoch in milestone_epochs):
+            raise ValueError(
+                "milestone_epochs must contain positive integers, "
+                f"got {milestone_epochs}."
+            )
+
+        checkpoint_path = self.output_dir / checkpoint_filename
+        history_path = self.output_dir / history_filename
+        milestone_dir = self.output_dir / milestone_dirname
+        milestone_set = set(milestone_epochs)
+
+        start_epoch = 1
+        if resume and checkpoint_path.exists():
+            completed_epoch = self.load_checkpoint(checkpoint_path)
+            start_epoch = completed_epoch + 1
+
+        if len(milestone_set) > 0:
+            milestone_dir.mkdir(parents=True, exist_ok=True)
+
+        if start_epoch > self.config.epochs:
+            save_json(self.history.to_dict(), history_path)
+            if save_model:
+                self.save_model(self.output_dir / model_filename)
+            return self.history
 
         epoch_bar = tqdm(
-            range(1, self.config.epochs + 1),
+            range(start_epoch, self.config.epochs + 1),
             desc="Training",
             unit="epoch",
             dynamic_ncols=True,
@@ -226,7 +516,18 @@ class Trainer:
                 }
             )
 
-        save_json(self.history.to_dict(), self.output_dir / history_filename)
+            if epoch in milestone_set:
+                self.save_model(milestone_dir / f"epoch_{epoch:06d}.pt")
+
+            should_save_checkpoint = (
+                epoch % checkpoint_every_epochs == 0
+                or epoch == self.config.epochs
+            )
+            if should_save_checkpoint:
+                self.save_checkpoint(checkpoint_path, epoch=epoch)
+                save_json(self.history.to_dict(), history_path)
+
+        save_json(self.history.to_dict(), history_path)
 
         if save_model:
             self.save_model(self.output_dir / model_filename)
@@ -397,14 +698,25 @@ class Trainer:
             save_path.parent.mkdir(parents=True, exist_ok=True)
 
         checkpoint: CheckpointDict = {
+            "version": 1,
             "epoch": epoch,
             "model_state_dict": self.model.state_dict(),
             "optimizer_state_dict": self.optimizer.state_dict(),
             "history": self.history.to_dict(),
             "config": self.config.model_dump(mode="json"),
+            "rng_state": {
+                "torch": torch.get_rng_state(),
+                "cuda": (
+                    torch.cuda.get_rng_state_all()
+                    if torch.cuda.is_available()
+                    else None
+                ),
+            },
         }
 
-        torch.save(checkpoint, save_path)
+        tmp_path = save_path.with_name(f"{save_path.name}.tmp")
+        torch.save(checkpoint, tmp_path)
+        tmp_path.replace(save_path)
 
     def load_checkpoint(self, path: str | Path) -> int:
         """完全checkpointを読み込みます。
@@ -426,7 +738,7 @@ class Trainer:
         KeyError
             checkpointに必要なキーが存在しない場合。
         ValueError
-            checkpoint内のepochが不正な場合。
+            checkpoint内の値が不正な場合。
         RuntimeError
             checkpointの読み込みに失敗した場合。
         """
@@ -454,13 +766,25 @@ class Trainer:
             raise KeyError(f"checkpoint is missing keys: {sorted(missing_keys)}")
 
         epoch = checkpoint["epoch"]
-        if not isinstance(epoch, int):
+        if type(epoch) is not int:
             raise ValueError(f"checkpoint epoch must be int, got {type(epoch).__name__}.")
         if epoch < 0:
             raise ValueError(f"checkpoint epoch must be non-negative, got {epoch}.")
 
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+
+        if "history" in checkpoint:
+            history_obj = checkpoint["history"]
+            if not isinstance(history_obj, Mapping):
+                raise ValueError(
+                    f"checkpoint history must be a mapping, "
+                    f"got {type(history_obj).__name__}."
+                )
+            self.history = TrainHistory.from_dict(history_obj)
+
+        if "rng_state" in checkpoint:
+            _restore_rng_state_from_checkpoint(checkpoint["rng_state"])
 
         return epoch
 

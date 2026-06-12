@@ -21,15 +21,18 @@ FizzBuzz/
 ├─ src/fizzbuzz/
 ├─ scripts/
 │  ├─ 01_train.py
-│  └─ 02_eval_extrapolation.py
+│  ├─ 02_eval_extrapolation.py
+│  ├─ 03_epoch_sweep.py
+│  └─ 04_eval_grokking.py
 ├─ configs/
 │  ├─ small.yaml
 │  ├─ medium.yaml
 │  └─ large.yaml
 ├─ runs/
 │  ├─ weights/
+│  ├─ grokking/
 │  └─ images/
-├─ notebooks/
+├─ LICENSE
 ├─ README.md
 ├─ requirements.txt
 ├─ .gitattributes
@@ -133,6 +136,37 @@ runs/eval_summary.json
 runs/images/confusion_matrix/
 ```
 
+## Grokking Checkpoints
+
+epoch ごとの性能推移を見る場合:
+
+```bash
+python scripts/03_epoch_sweep.py --all
+python scripts/04_eval_grokking.py --all
+```
+
+`03_epoch_sweep.py` は最大 epoch まで1回だけ学習し、指定 epoch の重みを保存します。既に `model.pt` があるモデルは skip し、`last.pt` がある場合はそこから resume します。
+
+```text
+runs/grokking/<model_name>/
+├─ model.pt
+├─ last.pt
+├─ history.json
+├─ milestones/
+│  ├─ epoch_000010.pt
+│  ├─ epoch_000050.pt
+│  └─ ...
+└─ grokking_train_summary.json
+```
+
+評価結果は以下に保存されます。
+
+```text
+runs/grokking/<model_name>/grokking_eval_results.json
+runs/grokking/<model_name>/evals/
+runs/images/grokking/
+```
+
 ## Metrics
 
 評価では以下を保存します。
@@ -157,9 +191,13 @@ FizzBuzz はクラス不均衡を含むため、Accuracy だけでなく Macro F
 python scripts/01_train.py --config configs/small.yaml
 python scripts/02_eval_extrapolation.py --config configs/small.yaml
 
-# 2. 全モデルを学習（1. のステップを踏まないなら --overwrite 不要）
+# 2. 全モデルを学習
 python scripts/01_train.py --all --overwrite
 
 # 3. 全モデルを外挿評価
 python scripts/02_eval_extrapolation.py --all
+
+# 4. grokking checkpoint 実験
+python scripts/03_epoch_sweep.py --all
+python scripts/04_eval_grokking.py --all
 ```

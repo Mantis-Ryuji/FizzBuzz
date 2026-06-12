@@ -1,0 +1,31 @@
+{
+  "name": "small",
+  "status": "completed",
+  "seed": 42,
+  "config_path": "configs\\small.yaml",
+  "output_dir": "runs\\grokking\\small",
+  "model_path": "runs\\grokking\\small\\model.pt",
+  "checkpoint_path": "runs\\grokking\\small\\last.pt",
+  "history_path": "runs\\grokking\\small\\history.json",
+  "milestone_dir": "runs\\grokking\\small\\milestones",
+  "milestone_epochs": [
+    10,
+    50,
+    100,
+    500,
+    1000,
+    5000,
+    10000
+  ],
+  "checkpoint_every_epochs": 10,
+  "num_parameters": 5108,
+  "epochs": 10000,
+  "batch_size": 1024,
+  "lr": 0.001,
+  "weight_decay": 0.0001,
+  "final_epoch": 10000,
+  "final_loss": 1.609341267158573e-10,
+  "final_accuracy": 1.0,
+  "final_lr": 0.001,
+  "total_elapsed_sec": 25773.83399470015
+}
