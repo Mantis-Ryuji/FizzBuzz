@@ -15,6 +15,9 @@
 
 [https://zenn.dev/mantis_ryuji/articles/fizz-buzz-exp](https://zenn.dev/mantis_ryuji/articles/fizz-buzz-exp)
 
+> [!WARNING]
+> 本記事の結果は単一 seed・単一 optimizer・固定 weight decay に基づく観察であり、grokking-like な挙動の再現性を主張するには seed sweep や正則化強度の検証が必要です。
+
 ## Project Structure
 
 ```text
