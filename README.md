@@ -12,6 +12,7 @@
 |     3 | FizzBuzz | 15で割り切れる         |
 
 詳細は以下の Zenn 記事を参照してください。
+
 [https://zenn.dev/mantis_ryuji/articles/fizz-buzz-exp](https://zenn.dev/mantis_ryuji/articles/fizz-buzz-exp)
 
 ## Project Structure
